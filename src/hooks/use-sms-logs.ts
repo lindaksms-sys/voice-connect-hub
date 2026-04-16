@@ -1,9 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import type { Database } from "@/integrations/supabase/types";
 import { useAuth } from "@/contexts/AuthContext";
-
-type SmsInsert = Database["public"]["Tables"]["sms_logs"]["Insert"];
 
 export function useSmsLogs() {
   const { user } = useAuth();
@@ -20,11 +17,13 @@ export function useSmsLogs() {
 
 export function useSendSms() {
   const qc = useQueryClient();
-  const { user } = useAuth();
   return useMutation({
-    mutationFn: async (sms: Omit<SmsInsert, "user_id">) => {
-      const { data, error } = await supabase.from("sms_logs").insert({ ...sms, user_id: user!.id }).select().single();
+    mutationFn: async (input: { to_number: string; body: string; from_name?: string }) => {
+      const { data, error } = await supabase.functions.invoke("send-sms", {
+        body: { to: input.to_number, body: input.body, from_name: input.from_name },
+      });
       if (error) throw error;
+      if (data?.error) throw new Error(typeof data.error === "string" ? data.error : JSON.stringify(data.error));
       return data;
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: ["sms_logs"] }),

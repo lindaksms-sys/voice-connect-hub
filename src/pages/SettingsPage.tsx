@@ -4,17 +4,14 @@ import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { useState } from "react";
-import { Key, Globe } from "lucide-react";
+import { Key, CheckCircle2 } from "lucide-react";
 
 const SettingsPage = () => {
   const { toast } = useToast();
   const [vapiKey, setVapiKey] = useState("");
-  const [twilioSid, setTwilioSid] = useState("");
-  const [twilioToken, setTwilioToken] = useState("");
-  const [twilioPhone, setTwilioPhone] = useState("");
 
   const handleSave = () => {
-    toast({ title: "Settings Saved", description: "API keys and configuration updated." });
+    toast({ title: "Settings Saved", description: "Configuration updated." });
   };
 
   return (
@@ -33,19 +30,15 @@ const SettingsPage = () => {
           </div>
         </div>
 
-        <div className="space-y-4 pt-4 border-t border-border">
-          <h3 className="text-sm font-semibold text-foreground flex items-center gap-2"><Globe className="h-4 w-4 text-primary" /> Twilio Configuration</h3>
-          <div>
-            <Label className="text-xs text-muted-foreground">Account SID</Label>
-            <Input type="password" value={twilioSid} onChange={(e) => setTwilioSid(e.target.value)} placeholder="AC..." className="mt-1 bg-secondary border-border font-mono text-sm" />
-          </div>
-          <div>
-            <Label className="text-xs text-muted-foreground">Auth Token</Label>
-            <Input type="password" value={twilioToken} onChange={(e) => setTwilioToken(e.target.value)} placeholder="••••••••" className="mt-1 bg-secondary border-border font-mono text-sm" />
-          </div>
-          <div>
-            <Label className="text-xs text-muted-foreground">Phone Number</Label>
-            <Input value={twilioPhone} onChange={(e) => setTwilioPhone(e.target.value)} placeholder="+1 (555) 000-0000" className="mt-1 bg-secondary border-border font-mono text-sm" />
+        <div className="space-y-3 pt-4 border-t border-border">
+          <h3 className="text-sm font-semibold text-foreground flex items-center gap-2">
+            <CheckCircle2 className="h-4 w-4 text-primary" /> Twilio
+          </h3>
+          <div className="flex items-center gap-2 text-xs text-muted-foreground">
+            <span className="inline-flex items-center gap-1.5 px-2 py-1 rounded-md bg-primary/10 text-primary">
+              <span className="h-1.5 w-1.5 rounded-full bg-primary" /> Connected
+            </span>
+            <span>Credentials managed via the Twilio connector. Outbound number set via <code className="font-mono">TWILIO_FROM_NUMBER</code>.</span>
           </div>
         </div>
 
