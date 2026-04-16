@@ -144,6 +144,16 @@ const Agents = () => {
                 <div className="flex items-center justify-between pt-2 border-t border-border">
                   <span className="text-[10px] font-mono text-muted-foreground">{agent.calls} total calls</span>
                   <div className="flex gap-1">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="h-7 px-2 text-xs gap-1"
+                      disabled={!agent.vapi_assistant_id || !agent.active}
+                      onClick={() => { setCallAgentId(agent.id); setCallNumber(""); }}
+                      title={!agent.vapi_assistant_id ? "Agent not synced with Vapi" : !agent.active ? "Agent is inactive" : "Test outbound call"}
+                    >
+                      <PhoneCall className="h-3 w-3" /> Test call
+                    </Button>
                     <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => openEdit(agent)}><Pencil className="h-3.5 w-3.5" /></Button>
                     <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive hover:text-destructive" onClick={() => handleDelete(agent.id)}><Trash2 className="h-3.5 w-3.5" /></Button>
                   </div>
