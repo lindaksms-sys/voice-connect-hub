@@ -56,7 +56,21 @@ const SmsPage = () => {
               <div>
                 <Label className="text-xs text-muted-foreground">Message</Label>
                 <Textarea value={message} onChange={(e) => setMessage(e.target.value)} placeholder="Type your message..." className="mt-1 bg-secondary border-border min-h-[100px]" />
-                <p className="text-[10px] text-muted-foreground mt-1 text-right">{message.length}/160</p>
+                {(() => {
+                  const len = message.length;
+                  const segments = len === 0 ? 0 : len <= 160 ? 1 : Math.ceil(len / 153);
+                  const over = len > 160;
+                  return (
+                    <div className="flex items-center justify-between mt-1 text-[10px]">
+                      <span className={over ? "text-amber-500" : "text-muted-foreground"}>
+                        {over ? `Multi-part SMS — sends as ${segments} segments (billed per segment)` : "\u00A0"}
+                      </span>
+                      <span className={over ? "text-amber-500 font-medium" : "text-muted-foreground"}>
+                        {len}/160{over ? ` · ${segments} segs` : ""}
+                      </span>
+                    </div>
+                  );
+                })()}
               </div>
               <DialogFooter>
                 <DialogClose asChild><Button variant="ghost" className="text-muted-foreground">Cancel</Button></DialogClose>
