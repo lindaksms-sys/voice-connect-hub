@@ -36,6 +36,12 @@ const ActionSchema = z.discriminatedUnion("action", [
     action: z.literal("delete"),
     assistant_id: z.string().min(1),
   }),
+  z.object({
+    action: z.literal("call"),
+    assistant_id: z.string().min(1),
+    customer_number: z.string().min(5).regex(/^\+[1-9]\d{6,14}$/, "Must be E.164 (e.g. +14155551234)"),
+    phone_number_id: z.string().optional(),
+  }),
 ]);
 
 function mapToVapi(p: {
