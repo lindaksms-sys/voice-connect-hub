@@ -170,6 +170,42 @@ const Agents = () => {
           <AgentForm onSubmit={handleUpdate} submitLabel="Save Changes" />
         </DialogContent>
       </Dialog>
+
+      <Dialog open={!!callAgentId} onOpenChange={(o) => !o && setCallAgentId(null)}>
+        <DialogContent className="bg-card border-border">
+          <DialogHeader>
+            <DialogTitle>Test outbound call</DialogTitle>
+            <DialogDescription>
+              Vapi will dial this number and connect the agent. Use E.164 format (e.g. +14155551234).
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-2">
+            <Label className="text-xs text-muted-foreground">Phone number</Label>
+            <Input
+              value={callNumber}
+              onChange={(e) => setCallNumber(e.target.value)}
+              placeholder="+14155551234"
+              className="bg-secondary border-border font-mono"
+            />
+          </div>
+          <DialogFooter>
+            <DialogClose asChild><Button variant="ghost" className="text-muted-foreground">Cancel</Button></DialogClose>
+            <Button
+              disabled={!callNumber || testCall.isPending}
+              onClick={() => {
+                const agent = agents?.find((a) => a.id === callAgentId);
+                if (!agent?.vapi_assistant_id) return;
+                testCall.mutate(
+                  { assistant_id: agent.vapi_assistant_id, customer_number: callNumber.trim() },
+                  { onSettled: () => setCallAgentId(null) },
+                );
+              }}
+            >
+              <PhoneCall className="h-4 w-4 mr-2" /> {testCall.isPending ? "Calling…" : "Call now"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
