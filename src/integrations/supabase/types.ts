@@ -19,36 +19,42 @@ export type Database = {
           active: boolean
           calls: number
           created_at: string
+          first_message: string
           id: string
           model: string
           name: string
           system_prompt: string
           updated_at: string
           user_id: string | null
+          vapi_assistant_id: string | null
           voice: string
         }
         Insert: {
           active?: boolean
           calls?: number
           created_at?: string
+          first_message?: string
           id?: string
           model?: string
           name: string
           system_prompt?: string
           updated_at?: string
           user_id?: string | null
+          vapi_assistant_id?: string | null
           voice?: string
         }
         Update: {
           active?: boolean
           calls?: number
           created_at?: string
+          first_message?: string
           id?: string
           model?: string
           name?: string
           system_prompt?: string
           updated_at?: string
           user_id?: string | null
+          vapi_assistant_id?: string | null
           voice?: string
         }
         Relationships: []
