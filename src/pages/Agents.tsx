@@ -22,11 +22,14 @@ const Agents = () => {
   const createAgent = useCreateAgent();
   const updateAgent = useUpdateAgent();
   const deleteAgent = useDeleteAgent();
+  const testCall = useTestCall();
 
   const [formData, setFormData] = useState(emptyForm);
   const [editId, setEditId] = useState<string | null>(null);
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [isEditOpen, setIsEditOpen] = useState(false);
+  const [callAgentId, setCallAgentId] = useState<string | null>(null);
+  const [callNumber, setCallNumber] = useState("");
 
   const handleCreate = () => {
     createAgent.mutate({ name: formData.name, model: formData.model, voice: formData.voice, system_prompt: formData.system_prompt, first_message: formData.first_message, active: formData.active });
