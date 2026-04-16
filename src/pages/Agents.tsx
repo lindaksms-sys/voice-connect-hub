@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Bot, Plus, Pencil, Trash2, Mic, Brain } from "lucide-react";
+import { Bot, Plus, Pencil, Trash2, Mic, Brain, CheckCircle2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -15,7 +15,7 @@ import { useAgents, useCreateAgent, useUpdateAgent, useDeleteAgent } from "@/hoo
 const VOICES = ["alloy", "echo", "fable", "onyx", "nova", "shimmer"];
 const MODELS = ["gpt-4o", "gpt-4o-mini", "gpt-4-turbo", "gpt-3.5-turbo"];
 
-const emptyForm = { name: "", model: "gpt-4o", voice: "alloy", system_prompt: "", active: true };
+const emptyForm = { name: "", model: "gpt-4o", voice: "alloy", system_prompt: "", first_message: "Hello, how can I help you today?", active: true };
 
 const Agents = () => {
   const { data: agents, isLoading } = useAgents();
@@ -29,14 +29,14 @@ const Agents = () => {
   const [isEditOpen, setIsEditOpen] = useState(false);
 
   const handleCreate = () => {
-    createAgent.mutate({ name: formData.name, model: formData.model, voice: formData.voice, system_prompt: formData.system_prompt, active: formData.active });
+    createAgent.mutate({ name: formData.name, model: formData.model, voice: formData.voice, system_prompt: formData.system_prompt, first_message: formData.first_message, active: formData.active });
     setFormData(emptyForm);
     setIsCreateOpen(false);
   };
 
   const handleUpdate = () => {
     if (!editId) return;
-    updateAgent.mutate({ id: editId, name: formData.name, model: formData.model, voice: formData.voice, system_prompt: formData.system_prompt, active: formData.active });
+    updateAgent.mutate({ id: editId, name: formData.name, model: formData.model, voice: formData.voice, system_prompt: formData.system_prompt, first_message: formData.first_message, active: formData.active });
     setIsEditOpen(false);
   };
 
@@ -46,7 +46,7 @@ const Agents = () => {
 
   const openEdit = (agent: any) => {
     setEditId(agent.id);
-    setFormData({ name: agent.name, model: agent.model, voice: agent.voice, system_prompt: agent.system_prompt, active: agent.active });
+    setFormData({ name: agent.name, model: agent.model, voice: agent.voice, system_prompt: agent.system_prompt, first_message: agent.first_message ?? "Hello!", active: agent.active });
     setIsEditOpen(true);
   };
 
@@ -71,6 +71,10 @@ const Agents = () => {
             <SelectContent>{VOICES.map((v) => <SelectItem key={v} value={v}>{v}</SelectItem>)}</SelectContent>
           </Select>
         </div>
+      </div>
+      <div>
+        <Label className="text-xs text-muted-foreground">First Message</Label>
+        <Input value={formData.first_message} onChange={(e) => setFormData({ ...formData, first_message: e.target.value })} placeholder="Hello, how can I help you today?" className="mt-1 bg-secondary border-border" />
       </div>
       <div>
         <Label className="text-xs text-muted-foreground">System Prompt</Label>
@@ -120,9 +124,14 @@ const Agents = () => {
                     <div className="rounded-lg bg-primary/10 p-2"><Bot className="h-5 w-5 text-primary" /></div>
                     <div>
                       <h3 className="text-sm font-semibold text-foreground">{agent.name}</h3>
-                      <div className="flex items-center gap-2 mt-0.5">
+                      <div className="flex items-center gap-2 mt-0.5 flex-wrap">
                         <Badge variant="secondary" className="text-[10px] font-mono">{agent.model}</Badge>
                         <Badge variant="outline" className="text-[10px]">{agent.voice}</Badge>
+                        {agent.vapi_assistant_id && (
+                          <Badge variant="outline" className="text-[10px] gap-1 text-primary border-primary/40">
+                            <CheckCircle2 className="h-2.5 w-2.5" /> Vapi
+                          </Badge>
+                        )}
                       </div>
                     </div>
                   </div>
