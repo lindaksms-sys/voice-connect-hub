@@ -22,13 +22,16 @@ const SmsPage = () => {
 
   const handleSend = () => {
     sendSms.mutate(
-      { from_name: "Manual", to_number: phone, body: message, status: "sent" },
+      { from_name: "Manual", to_number: phone, body: message },
       {
         onSuccess: () => {
-          toast({ title: "SMS Queued", description: `Message to ${phone} has been queued.` });
+          toast({ title: "SMS Sent", description: `Message delivered to ${phone}.` });
           setPhone("");
           setMessage("");
           setOpen(false);
+        },
+        onError: (err: Error) => {
+          toast({ title: "SMS Failed", description: err.message, variant: "destructive" });
         },
       }
     );
