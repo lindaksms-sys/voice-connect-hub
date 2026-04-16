@@ -1,16 +1,16 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Bot, Plus, Pencil, Trash2, Mic, Brain, CheckCircle2 } from "lucide-react";
+import { Bot, Plus, Pencil, Trash2, Mic, Brain, CheckCircle2, PhoneCall } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter, DialogClose } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter, DialogClose, DialogDescription } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
 import { Skeleton } from "@/components/ui/skeleton";
-import { useAgents, useCreateAgent, useUpdateAgent, useDeleteAgent } from "@/hooks/use-agents";
+import { useAgents, useCreateAgent, useUpdateAgent, useDeleteAgent, useTestCall } from "@/hooks/use-agents";
 
 const VOICES = ["alloy", "echo", "fable", "onyx", "nova", "shimmer"];
 const MODELS = ["gpt-4o", "gpt-4o-mini", "gpt-4-turbo", "gpt-3.5-turbo"];
@@ -22,11 +22,14 @@ const Agents = () => {
   const createAgent = useCreateAgent();
   const updateAgent = useUpdateAgent();
   const deleteAgent = useDeleteAgent();
+  const testCall = useTestCall();
 
   const [formData, setFormData] = useState(emptyForm);
   const [editId, setEditId] = useState<string | null>(null);
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [isEditOpen, setIsEditOpen] = useState(false);
+  const [callAgentId, setCallAgentId] = useState<string | null>(null);
+  const [callNumber, setCallNumber] = useState("");
 
   const handleCreate = () => {
     createAgent.mutate({ name: formData.name, model: formData.model, voice: formData.voice, system_prompt: formData.system_prompt, first_message: formData.first_message, active: formData.active });
@@ -141,6 +144,16 @@ const Agents = () => {
                 <div className="flex items-center justify-between pt-2 border-t border-border">
                   <span className="text-[10px] font-mono text-muted-foreground">{agent.calls} total calls</span>
                   <div className="flex gap-1">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="h-7 px-2 text-xs gap-1"
+                      disabled={!agent.vapi_assistant_id || !agent.active}
+                      onClick={() => { setCallAgentId(agent.id); setCallNumber(""); }}
+                      title={!agent.vapi_assistant_id ? "Agent not synced with Vapi" : !agent.active ? "Agent is inactive" : "Test outbound call"}
+                    >
+                      <PhoneCall className="h-3 w-3" /> Test call
+                    </Button>
                     <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => openEdit(agent)}><Pencil className="h-3.5 w-3.5" /></Button>
                     <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive hover:text-destructive" onClick={() => handleDelete(agent.id)}><Trash2 className="h-3.5 w-3.5" /></Button>
                   </div>
@@ -155,6 +168,42 @@ const Agents = () => {
         <DialogContent className="bg-card border-border">
           <DialogHeader><DialogTitle>Edit Agent</DialogTitle></DialogHeader>
           <AgentForm onSubmit={handleUpdate} submitLabel="Save Changes" />
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={!!callAgentId} onOpenChange={(o) => !o && setCallAgentId(null)}>
+        <DialogContent className="bg-card border-border">
+          <DialogHeader>
+            <DialogTitle>Test outbound call</DialogTitle>
+            <DialogDescription>
+              Vapi will dial this number and connect the agent. Use E.164 format (e.g. +14155551234).
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-2">
+            <Label className="text-xs text-muted-foreground">Phone number</Label>
+            <Input
+              value={callNumber}
+              onChange={(e) => setCallNumber(e.target.value)}
+              placeholder="+14155551234"
+              className="bg-secondary border-border font-mono"
+            />
+          </div>
+          <DialogFooter>
+            <DialogClose asChild><Button variant="ghost" className="text-muted-foreground">Cancel</Button></DialogClose>
+            <Button
+              disabled={!callNumber || testCall.isPending}
+              onClick={() => {
+                const agent = agents?.find((a) => a.id === callAgentId);
+                if (!agent?.vapi_assistant_id) return;
+                testCall.mutate(
+                  { assistant_id: agent.vapi_assistant_id, customer_number: callNumber.trim() },
+                  { onSettled: () => setCallAgentId(null) },
+                );
+              }}
+            >
+              <PhoneCall className="h-4 w-4 mr-2" /> {testCall.isPending ? "Calling…" : "Call now"}
+            </Button>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
     </div>

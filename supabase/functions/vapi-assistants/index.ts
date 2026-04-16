@@ -36,6 +36,12 @@ const ActionSchema = z.discriminatedUnion("action", [
     action: z.literal("delete"),
     assistant_id: z.string().min(1),
   }),
+  z.object({
+    action: z.literal("call"),
+    assistant_id: z.string().min(1),
+    customer_number: z.string().min(5).regex(/^\+[1-9]\d{6,14}$/, "Must be E.164 (e.g. +14155551234)"),
+    phone_number_id: z.string().optional(),
+  }),
 ]);
 
 function mapToVapi(p: {
@@ -156,22 +162,60 @@ Deno.serve(async (req) => {
       });
     }
 
-    // delete
-    const res = await fetch(`${VAPI_BASE}/${data.assistant_id}`, {
-      method: "DELETE",
-      headers,
-    });
-    if (!res.ok && res.status !== 404) {
-      const body = await res.text();
+    if (data.action === "delete") {
+      const res = await fetch(`${VAPI_BASE}/${data.assistant_id}`, {
+        method: "DELETE",
+        headers,
+      });
+      if (!res.ok && res.status !== 404) {
+        const body = await res.text();
+        return new Response(
+          JSON.stringify({ error: "Vapi delete failed", details: body }),
+          {
+            status: res.status,
+            headers: { ...corsHeaders, "Content-Type": "application/json" },
+          },
+        );
+      }
+      return new Response(JSON.stringify({ ok: true }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    // call (outbound)
+    const phoneNumberId = data.phone_number_id ?? Deno.env.get("VAPI_PHONE_NUMBER_ID");
+    if (!phoneNumberId) {
       return new Response(
-        JSON.stringify({ error: "Vapi delete failed", details: body }),
+        JSON.stringify({
+          error:
+            "No Vapi phone number configured. Set VAPI_PHONE_NUMBER_ID secret or pass phone_number_id.",
+        }),
         {
-          status: res.status,
+          status: 400,
           headers: { ...corsHeaders, "Content-Type": "application/json" },
         },
       );
     }
-    return new Response(JSON.stringify({ ok: true }), {
+    const callRes = await fetch("https://api.vapi.ai/call", {
+      method: "POST",
+      headers,
+      body: JSON.stringify({
+        assistantId: data.assistant_id,
+        phoneNumberId,
+        customer: { number: data.customer_number },
+      }),
+    });
+    const callBody = await callRes.json();
+    if (!callRes.ok) {
+      return new Response(
+        JSON.stringify({ error: "Vapi call failed", details: callBody }),
+        {
+          status: callRes.status,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        },
+      );
+    }
+    return new Response(JSON.stringify({ ok: true, call: callBody }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   } catch (err) {

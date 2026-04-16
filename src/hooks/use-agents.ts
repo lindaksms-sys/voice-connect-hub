@@ -112,3 +112,17 @@ export function useDeleteAgent() {
     onSuccess: () => qc.invalidateQueries({ queryKey: ["agents"] }),
   });
 }
+
+export function useTestCall() {
+  return useMutation({
+    mutationFn: async ({ assistant_id, customer_number }: { assistant_id: string; customer_number: string }) => {
+      return await invokeVapi({ action: "call", assistant_id, customer_number });
+    },
+    onSuccess: () => {
+      toast({ title: "Call initiated", description: "Vapi is dialing the number now." });
+    },
+    onError: (e) => {
+      toast({ title: "Call failed", description: (e as Error).message, variant: "destructive" });
+    },
+  });
+}
