@@ -24,6 +24,7 @@ export type Database = {
           name: string
           system_prompt: string
           updated_at: string
+          user_id: string | null
           voice: string
         }
         Insert: {
@@ -35,6 +36,7 @@ export type Database = {
           name: string
           system_prompt?: string
           updated_at?: string
+          user_id?: string | null
           voice?: string
         }
         Update: {
@@ -46,6 +48,7 @@ export type Database = {
           name?: string
           system_prompt?: string
           updated_at?: string
+          user_id?: string | null
           voice?: string
         }
         Relationships: []
@@ -62,6 +65,7 @@ export type Database = {
           primary_color: string
           support_email: string
           updated_at: string
+          user_id: string | null
         }
         Insert: {
           accent_color?: string
@@ -74,6 +78,7 @@ export type Database = {
           primary_color?: string
           support_email?: string
           updated_at?: string
+          user_id?: string | null
         }
         Update: {
           accent_color?: string
@@ -86,6 +91,7 @@ export type Database = {
           primary_color?: string
           support_email?: string
           updated_at?: string
+          user_id?: string | null
         }
         Relationships: []
       }
@@ -100,6 +106,7 @@ export type Database = {
           id: string
           status: string
           to_number: string
+          user_id: string | null
         }
         Insert: {
           agent_name?: string | null
@@ -111,6 +118,7 @@ export type Database = {
           id?: string
           status?: string
           to_number: string
+          user_id?: string | null
         }
         Update: {
           agent_name?: string | null
@@ -122,6 +130,7 @@ export type Database = {
           id?: string
           status?: string
           to_number?: string
+          user_id?: string | null
         }
         Relationships: []
       }
@@ -133,6 +142,7 @@ export type Database = {
           id: string
           status: string
           to_number: string
+          user_id: string | null
         }
         Insert: {
           body: string
@@ -141,6 +151,7 @@ export type Database = {
           id?: string
           status?: string
           to_number: string
+          user_id?: string | null
         }
         Update: {
           body?: string
@@ -149,6 +160,7 @@ export type Database = {
           id?: string
           status?: string
           to_number?: string
+          user_id?: string | null
         }
         Relationships: []
       }

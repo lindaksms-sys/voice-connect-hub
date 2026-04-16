@@ -1,27 +1,31 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import type { Database } from "@/integrations/supabase/types";
+import { useAuth } from "@/contexts/AuthContext";
 
 type Agent = Database["public"]["Tables"]["agents"]["Row"];
 type AgentInsert = Database["public"]["Tables"]["agents"]["Insert"];
 type AgentUpdate = Database["public"]["Tables"]["agents"]["Update"];
 
 export function useAgents() {
+  const { user } = useAuth();
   return useQuery({
-    queryKey: ["agents"],
+    queryKey: ["agents", user?.id],
     queryFn: async () => {
       const { data, error } = await supabase.from("agents").select("*").order("created_at", { ascending: false });
       if (error) throw error;
       return data as Agent[];
     },
+    enabled: !!user,
   });
 }
 
 export function useCreateAgent() {
   const qc = useQueryClient();
+  const { user } = useAuth();
   return useMutation({
-    mutationFn: async (agent: AgentInsert) => {
-      const { data, error } = await supabase.from("agents").insert(agent).select().single();
+    mutationFn: async (agent: Omit<AgentInsert, "user_id">) => {
+      const { data, error } = await supabase.from("agents").insert({ ...agent, user_id: user!.id }).select().single();
       if (error) throw error;
       return data;
     },

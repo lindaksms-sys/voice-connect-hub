@@ -6,12 +6,13 @@ import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
-import { useBranding, useUpdateBranding } from "@/hooks/use-branding";
+import { useBranding, useUpdateBranding, useCreateBranding } from "@/hooks/use-branding";
 
 const Branding = () => {
   const { toast } = useToast();
   const { data: branding, isLoading } = useBranding();
   const updateBranding = useUpdateBranding();
+  const createBranding = useCreateBranding();
 
   const [form, setForm] = useState({
     company_name: "VoiceAgent",
@@ -34,11 +35,17 @@ const Branding = () => {
   }, [branding]);
 
   const handleSave = () => {
-    if (!branding) return;
-    updateBranding.mutate(
-      { id: branding.id, ...form, custom_domain: form.custom_domain || null },
-      { onSuccess: () => toast({ title: "Branding Updated", description: "White-label settings saved." }) }
-    );
+    if (branding) {
+      updateBranding.mutate(
+        { id: branding.id, ...form, custom_domain: form.custom_domain || null },
+        { onSuccess: () => toast({ title: "Branding Updated", description: "White-label settings saved." }) }
+      );
+    } else {
+      createBranding.mutate(
+        { ...form, custom_domain: form.custom_domain || null },
+        { onSuccess: () => toast({ title: "Branding Created", description: "White-label settings saved." }) }
+      );
+    }
   };
 
   if (isLoading) return <div className="space-y-4 max-w-2xl"><Skeleton className="h-8 w-48" /><Skeleton className="h-96 w-full" /></div>;

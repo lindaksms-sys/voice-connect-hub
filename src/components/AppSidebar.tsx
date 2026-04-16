@@ -7,9 +7,12 @@ import {
   Settings,
   ChevronLeft,
   Zap,
+  LogOut,
 } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { useLocation } from "react-router-dom";
+import { useAuth } from "@/contexts/AuthContext";
+import { Button } from "@/components/ui/button";
 import {
   Sidebar,
   SidebarContent,
@@ -40,6 +43,7 @@ export function AppSidebar() {
   const { state } = useSidebar();
   const collapsed = state === "collapsed";
   const location = useLocation();
+  const { signOut, user } = useAuth();
 
   const isActive = (path: string) =>
     path === "/" ? location.pathname === "/" : location.pathname.startsWith(path);
@@ -110,15 +114,19 @@ export function AppSidebar() {
         </SidebarGroup>
       </SidebarContent>
 
-      <SidebarFooter className="p-4">
+      <SidebarFooter className="p-4 space-y-2">
         {!collapsed && (
           <div className="rounded-md border border-border bg-secondary/50 p-3">
             <p className="text-[10px] uppercase tracking-widest text-muted-foreground">
-              Plan
+              Account
             </p>
-            <p className="text-xs font-medium text-foreground">Pro · 10k calls</p>
+            <p className="text-xs font-medium text-foreground truncate">{user?.email}</p>
           </div>
         )}
+        <Button variant="ghost" size={collapsed ? "icon" : "default"} className="w-full text-muted-foreground hover:text-foreground" onClick={signOut}>
+          <LogOut className="h-4 w-4" />
+          {!collapsed && <span className="ml-2">Sign Out</span>}
+        </Button>
       </SidebarFooter>
     </Sidebar>
   );
