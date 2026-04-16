@@ -14,7 +14,144 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      agents: {
+        Row: {
+          active: boolean
+          calls: number
+          created_at: string
+          id: string
+          model: string
+          name: string
+          system_prompt: string
+          updated_at: string
+          voice: string
+        }
+        Insert: {
+          active?: boolean
+          calls?: number
+          created_at?: string
+          id?: string
+          model?: string
+          name: string
+          system_prompt?: string
+          updated_at?: string
+          voice?: string
+        }
+        Update: {
+          active?: boolean
+          calls?: number
+          created_at?: string
+          id?: string
+          model?: string
+          name?: string
+          system_prompt?: string
+          updated_at?: string
+          voice?: string
+        }
+        Relationships: []
+      }
+      branding_settings: {
+        Row: {
+          accent_color: string
+          company_name: string
+          created_at: string
+          custom_domain: string | null
+          favicon_url: string | null
+          id: string
+          logo_url: string | null
+          primary_color: string
+          support_email: string
+          updated_at: string
+        }
+        Insert: {
+          accent_color?: string
+          company_name?: string
+          created_at?: string
+          custom_domain?: string | null
+          favicon_url?: string | null
+          id?: string
+          logo_url?: string | null
+          primary_color?: string
+          support_email?: string
+          updated_at?: string
+        }
+        Update: {
+          accent_color?: string
+          company_name?: string
+          created_at?: string
+          custom_domain?: string | null
+          favicon_url?: string | null
+          id?: string
+          logo_url?: string | null
+          primary_color?: string
+          support_email?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      call_logs: {
+        Row: {
+          agent_name: string | null
+          cost: number
+          created_at: string
+          direction: string
+          duration: string
+          from_number: string
+          id: string
+          status: string
+          to_number: string
+        }
+        Insert: {
+          agent_name?: string | null
+          cost?: number
+          created_at?: string
+          direction: string
+          duration?: string
+          from_number: string
+          id?: string
+          status?: string
+          to_number: string
+        }
+        Update: {
+          agent_name?: string | null
+          cost?: number
+          created_at?: string
+          direction?: string
+          duration?: string
+          from_number?: string
+          id?: string
+          status?: string
+          to_number?: string
+        }
+        Relationships: []
+      }
+      sms_logs: {
+        Row: {
+          body: string
+          created_at: string
+          from_name: string
+          id: string
+          status: string
+          to_number: string
+        }
+        Insert: {
+          body: string
+          created_at?: string
+          from_name: string
+          id?: string
+          status?: string
+          to_number: string
+        }
+        Update: {
+          body?: string
+          created_at?: string
+          from_name?: string
+          id?: string
+          status?: string
+          to_number?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
