@@ -1,41 +1,29 @@
 
-The user wants to integrate Vapi for real voice assistant management via edge functions. Vapi requires a private API key, so I'll need an edge function as a secure proxy.
+Twilio is **not** integrated yet. Current state:
 
-## Plan: Vapi Integration
+- `src/pages/SmsPage.tsx` + `useSendSms` hook only insert rows into the `sms_logs` table — no real SMS is sent.
+- `src/pages/SettingsPage.tsx` has Twilio SID/Token/Phone input fields, but `handleSave` just shows a toast and discards them.
+- No Twilio edge function exists in `supabase/functions/`.
+- No Twilio connector linked, no Twilio secrets configured.
 
-**1. Secret setup**
-- Request `VAPI_API_KEY` from the user (private key from Vapi dashboard → API Keys).
+## Plan: Wire up real Twilio SMS
 
-**2. Database migration**
-- Add `vapi_assistant_id TEXT` column to `agents` table to link local records with Vapi assistants.
-- Add `first_message TEXT` column (Vapi assistants need a greeting).
+**1. Connect Twilio** via the standard Twilio connector (handles auth + Account SID automatically through the Lovable gateway — no manual SID/token fields needed).
 
-**3. Edge function: `vapi-assistants`**
-Single function at `supabase/functions/vapi-assistants/index.ts` acting as a secure proxy:
-- `POST /` — create Vapi assistant, returns `assistant_id`
-- `PATCH /:id` — update Vapi assistant
-- `DELETE /:id` — delete Vapi assistant
-- JWT validation via `getClaims()`, CORS headers, Zod input validation
-- Calls `https://api.vapi.ai/assistant` with `Authorization: Bearer ${VAPI_API_KEY}`
-- Maps our schema → Vapi schema (model.provider=openai, voice.provider=openai, etc.)
+**2. Edge function `send-sms`** (`supabase/functions/send-sms/index.ts`)
+- JWT-protected, CORS, Zod validation (`to` in E.164, `body` ≤ 1600 chars).
+- Reads `LOVABLE_API_KEY` + `TWILIO_API_KEY` from env.
+- POSTs to `https://connector-gateway.lovable.dev/twilio/Messages.json` with `From` (Twilio number), `To`, `Body`.
+- On success → insert row into `sms_logs` with `status: "sent"` and Twilio SID; on failure → insert with `status: "failed"` + error.
 
-**4. Frontend hook updates (`src/hooks/use-agents.ts`)**
-- `useCreateAgent`: invoke edge function first → get `vapi_assistant_id` → insert into Supabase with that id.
-- `useUpdateAgent`: invoke edge function to sync changes to Vapi (when assistant_id exists).
-- `useDeleteAgent`: invoke edge function to delete from Vapi → then delete from Supabase.
-- Wrap with try/catch + toast on Vapi failures.
+**3. Twilio "From" number**
+- Add a `TWILIO_FROM_NUMBER` secret (your purchased Twilio number in E.164) so users don't enter it per send.
 
-**5. UI tweak (`src/pages/Agents.tsx`)**
-- Add `first_message` field to the agent form.
-- Show small badge/indicator when an agent is synced with Vapi.
+**4. Frontend updates**
+- `useSendSms` → invoke `send-sms` edge function instead of direct insert; the function handles the log row.
+- `SettingsPage.tsx` → remove the now-obsolete Twilio SID/Token/Phone fields (credentials live in the connector); replace with a small "Twilio: Connected ✓" status block.
 
-**Vapi mapping reference**
-```text
-{
-  name, firstMessage,
-  model:  { provider: "openai", model, messages: [{role:"system", content: system_prompt}] },
-  voice:  { provider: "openai", voiceId: voice }
-}
-```
+**5. Cleanup**
+- Keep `SmsPage` UI as-is; it'll just start sending real messages.
 
-No changes to `call_logs`, `sms_logs`, or branding.
+After approval I'll connect the Twilio connector, then request the `TWILIO_FROM_NUMBER` secret, then build the function + wire the UI.
